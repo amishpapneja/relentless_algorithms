@@ -16,44 +16,39 @@ def get_python_files(root_dir):
 
 def generate_github_url(local_path):
     github_base_url = 'https://github.com/amishpapneja/relentless_algorithms/blob/master/'
-    # Remove the first occurrence of 'relentless_algorithms/'
-    # print("s", local_path)
-    # parts = local_path.split('relentless_algorithms/', 1)
     local_path = local_path.lstrip('relentless_algorithms')
-    print("p",local_path)
-    # if len(parts) > 1:
-    #     local_path = parts[1]
-    # print(local_path.replace('\\', '/'))
     return github_base_url + local_path.replace('\\', '/')
 
 # Function to generate Markdown table content for files with numbered rows and GitHub URLs
 def generate_markdown_table(files):
-    table_content = "| No. | Name | LeetCode Link | Link to the path |\n"
-    table_content += "|:----:|:----:|:-------------:|------------------|\n"
+    table_content = "| No. | Problem Name | Solution |\n"
+    table_content += "|:----:|:-------------:|------------------|\n"
     for i, file in enumerate(files, 1):
         filename = os.path.basename(file)
         github_url = generate_github_url(file)
-        # table_content += f"| {i} | {filename} | [{filename}]({github_url}) |\n"
-        leetcode_link = generate_leetcode_link(filename)
-        table_content += f"| {i} | {filename} | [LeetCode]({leetcode_link}) | [{filename}]({github_url}) |\n"
+        id, name, leetcode_link = generate_leetcode_link(filename)
+        table_content += f"| {i} | [{name}]({leetcode_link}) | [{filename}]({github_url}) |\n"
     return table_content
 
 def generate_leetcode_link(filename):
     print(filename)
-    leetcode_id = file_name_pattern.match(filename).group(2)
-    return f"https://leetcode.com/problems/{leetcode_id}/"
+    leetcode_id = file_name_pattern.match(filename).group(1)
+    problem_name = file_name_pattern.match(filename).group(2)
+    display_name = " ".join(word.capitalize() for word in problem_name.split("-"))
+    print(display_name)
+    return leetcode_id, display_name, f"https://leetcode.com/problems/{problem_name}/"
 
 
 # Edit a readme file
-readme_path = 'relentless_algorithms\README.md'
+readme_path = 'README.md'
 
 # Go through files and folders
-folder_path = 'relentless_algorithms\special_200'
-matching_count = 0
-non_matching_count = 0
+folder_path = 'special_200'
 
 python_files = get_python_files(folder_path)
 leet_code_files = []
+misc_files = []
+
 # Iterate through the files
 for file_path in python_files:
     # Extract file name
@@ -61,21 +56,17 @@ for file_path in python_files:
     file_name = os.path.basename(file_path)
     # Check if the file name matches the pattern
     if file_name_pattern.match(file_name):
-        matching_count += 1
         leet_code_files.append(og)
     else:
-        non_matching_count += 1
-print(matching_count, non_matching_count)
+        misc_files.append(og)
+
 # Generate Markdown content for the counts
-counts_markdown = f"# Total Leetcode Count: {matching_count}\n\n" \
-                  f"# Miscellaneous Count: {non_matching_count}\n\n"
+counts_markdown = f"# Total Leetcode Count: {len(leet_code_files)}\n\n" \
+                  f"# Miscellaneous Count: {len(misc_files)}\n\n"
 
 # Access internet links
 response = requests.get('https://google.com')
 html_content = response.text
-
-# Write effective Markdown
-# markdown_content = markdown.markdown('# Header\nThis is *markdown* content.')
 
 # Generate Markdown table for files
 markdown_table = generate_markdown_table(leet_code_files)
